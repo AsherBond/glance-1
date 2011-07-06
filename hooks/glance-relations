@@ -58,10 +58,20 @@ function db_changed {
   echo "####### DB CHANGED $DB_HOST $DB_PASSWORD" >>/tmp/log
 }
 
+function image-service_joined {
+  bind_host=$(cat /etc/glance/glance-api.conf | grep bind_host | cut -d= -f2 | sed -e 's/ //g')
+  bind_port=$(cat /etc/glance/glance-api.conf | grep bind_port | cut -d= -f2 | sed -e 's/ //g')
+  [[ $bind_host == "0.0.0.0" ]] && bind_host=$IP
+  ensemble-log "glnace: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
+  relation-set glance-api-server="$bind_host:$bind_port"
+}
+
 case $ARG0 in
   "start"|"stop") exit 0 ;;
   "install") install_hook ;;
-  "shared-db-realtion-joined") db_joined ;;
+  "shared-db-relation-joined") db_joined ;;
   "shared-db-relation-changed") db_changed;;
+  "image-service-relation-joined") image-service_joined ;;
+  "image-service-relation-changed") exit 0 ;;
 esac
 
