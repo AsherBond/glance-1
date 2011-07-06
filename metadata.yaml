@@ -1,0 +1,15 @@
+ensemble: formula
+name: glance
+revision: 11 
+summary: "OpenStack Image Registry and Delivery Service"
+description: |
+ The Glance project provides an image registration and discovery service
+ (Parallax) and an image delivery service (Teller). These services are used
+ in conjunction by Nova to deliver images from object stores, such as
+ OpenStack's Swift service, to Nova's compute nodes.
+provides:
+  image-service:
+    interface: glance
+requires:
+  shared-db:
+    interface: mysql

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+SERVICES="glance-api glance-registry"
+GLANCE_REGISTRY_CONF="/etc/glance/glance-registry.conf"
+GLANCE_API_CONF="/etc/glance/glance-api.conf"
+
+DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
+IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
+
+DB_USER="glance"
+NOVA_DB="nova"
+
+function glance_ctl {
+  if [[ $1 == "all" ]] ; then
+    CTL=$SERVICES
+  else
+    CTL=$1
+  fi
+  ACTION=$2
+  if [[ -z $CTL ]] || [[ -z $ACTION ]] ; then
+    ensemble-log "ERROR glance_ctl: Not enough arguments"
+    exit 1
+  fi
+  for i in $CTL ; do
+    service $i $ACTION
+    if [[ $? != 0 ]] ; then
+      ensemble-log "ERROR glance_ctl: Service $i failed to $ACTION"
+    fi
+  done
+}
+
+function set_or_update {
+  # This handles configuration of both api and registry server
+  # until LP #806241 is resolved.  Until then, $3 is either
+  # 'api' or 'registry' to specify which
+  # set or update a key=value config option in nova.conf
+  KEY=$1
+  VALUE=$2
+  [[ $3 == "api" ]] && CONF=$GLANCE_API_CONF
+  [[ $3 == "registry" ]] && CONF=$GLANCE_REGISTRY_CONF
+  [[ -z $KEY ]] && exit 1
+  [[ -z $VALUE ]] && exit 1
+  cat $CONF | grep "$KEY = $VALUE" >/dev/null \
+   && ensemble-log "glance: $KEY = $VALUE already set" exit 0
+  if cat $CONF | grep "$KEY =" >/dev/null ; then
+    echo "updatei $3 $KEY $VALUE"
+    sed -i "s|\($KEY = \).*|\1$VALUE|" $CONF
+  else
+    echo "set $3 $KEY $VALUE"
+    echo "$KEY = $VALUE" >>$CONF
+  fi
+}
