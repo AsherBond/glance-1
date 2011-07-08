@@ -14,7 +14,7 @@ function install_hook {
   apt-get -y install python-software-properties || exit 1
   add-apt-repository ppa:nova-core/trunk || exit 1
   apt-get update || exit 1
-  apt-get -y install glance || exit 1
+  apt-get -y install glance python-mysqldb || exit 1
 
   glance_ctl all stop
 
@@ -40,7 +40,7 @@ function db_joined {
   relation-set username=$DB_USER
   relation-set hostname=`uname -n`
   relation-set ip=$IP
-  echo "###### DB JOINED $NOVA_DB $DB_USER $HOSTNAME $IP" >>/tmp/log
+  service glance-registry start
 }
 
 function db_changed {
