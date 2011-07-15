@@ -30,16 +30,13 @@ function install_hook {
   set_or_update debug True api
   set_or_update verbose True registry
   set_or_update debug True registry
-
 }
 
 function db_joined {
-  ensemble-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@$IP"
-  echo "DB JOINED $NOVA_DB $DB_USER $HOSTNAME $IP" >>/tmp/log
+  ensemble-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@$HOSTNAME"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
-  relation-set hostname=`uname -n`
-  relation-set ip=$IP
+  relation-set hostname=$HOSTNAME
   service glance-registry start
 }
 
@@ -51,18 +48,17 @@ function db_changed {
     echo "db_changed: DB_HOST || DB_PASSWORD not yet set. Exit 0 and retry"
     exit 0
   else
-    echo "db_chan ged: Received password from $DB_HOST"
+    echo "db_changed: Received password from $DB_HOST"
   fi
   ensemble-log "glance: db_changed: Configuring registry for access to $NOVA_DB@$DB_HOST"
   set_or_update sql_connection "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST/$NOVA_DB" registry
-  echo "####### DB CHANGED $DB_HOST $DB_PASSWORD" >>/tmp/log
 }
 
 function image-service_joined {
   bind_host=$(cat /etc/glance/glance-api.conf | grep bind_host | cut -d= -f2 | sed -e 's/ //g')
   bind_port=$(cat /etc/glance/glance-api.conf | grep bind_port | cut -d= -f2 | sed -e 's/ //g')
-  [[ $bind_host == "0.0.0.0" ]] && bind_host=$IP
-  ensemble-log "glnace: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
+  [[ $bind_host == "0.0.0.0" ]] && bind_host=$HOSTNAME
+  ensemble-log "glance: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
   relation-set glance-api-server="$bind_host:$bind_port"
 }
 

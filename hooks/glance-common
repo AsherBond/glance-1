@@ -4,11 +4,10 @@ SERVICES="glance-api glance-registry"
 GLANCE_REGISTRY_CONF="/etc/glance/glance-registry.conf"
 GLANCE_API_CONF="/etc/glance/glance-api.conf"
 
-DEFAULT_ETH=$(ip route  | grep default | awk '{ print $5 }')
-IP=$(ifconfig  $DEFAULT_ETH | grep 'inet addr' | awk '{ print $2 }' | cut -d: -f2)
-
 DB_USER="glance"
 NOVA_DB="nova"
+
+HOSTNAME=`hostname -f`
 
 function glance_ctl {
   if [[ $1 == "all" ]] ; then
