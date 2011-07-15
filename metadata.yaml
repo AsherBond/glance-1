@@ -12,4 +12,4 @@ provides:
     interface: glance
 requires:
   shared-db:
-    interface: mysql
+    interface: mysql-shared
