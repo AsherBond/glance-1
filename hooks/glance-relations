@@ -62,6 +62,20 @@ function image-service_joined {
   relation-set glance-api-server="$bind_host:$bind_port"
 }
 
+function object-store_changed {
+  URL=`relation-get url`
+  USER=`relation-get user`
+  PASSWORD=`relation-get password`
+  [[ -z $URL ]] || [[ -z $USER ]] || [[ -z $PASSWORD ]] && \
+    echo "URL||USER||PASSWORD not set, peer not ready?" && exit 0
+  set_or_update default_store swift api
+  set_or_update swift_store_user system:$USER api
+  set_or_update swift_store_key $PASSWORD api
+  set_or_update swift_store_auth_address $URL api
+  set_or_update swift_store_create_container_on_put true api
+
+}
+
 case $ARG0 in
   "start"|"stop") exit 0 ;;
   "install") install_hook ;;
@@ -69,5 +83,7 @@ case $ARG0 in
   "shared-db-relation-changed") db_changed;;
   "image-service-relation-joined") image-service_joined ;;
   "image-service-relation-changed") exit 0 ;;
+  "object-store-relation-joined") exit 0 ;;
+  "object-store-relation-changed") object-store_changed ;;
 esac
 
