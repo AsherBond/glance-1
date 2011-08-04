@@ -9,6 +9,17 @@ NOVA_DB="nova"
 
 HOSTNAME=`hostname -f`
 
+function glance_ctl_status {
+  SERVICE=$1
+  # workaround upstarts lack of scriptable return codes
+  STATUS=$(service $SERVICE status | cut -d/ -f1 | awk '{ print $2 }')
+  case $STATUS in
+    "start") return 0 ;;
+    "stop") return 1 ;;
+    *) echo "ERROR: Unexpected status of service $SERVICE: $STATUS" && exit 1 ;;
+  esac
+}
+
 function glance_ctl {
   if [[ $1 == "all" ]] ; then
     CTL=$SERVICES
@@ -21,9 +32,16 @@ function glance_ctl {
     exit 1
   fi
   for i in $CTL ; do
-    service $i $ACTION
+    case $ACTION in
+      "start")
+        glance_ctl_status $i || service $i start ;;
+      "stop")
+        glance_ctl_status $i && service $i stop || return 0 ;;
+      "restart")
+        glance_ctl_status $i && service $i restart || service $i start ;;
+    esac
     if [[ $? != 0 ]] ; then
-      ensemble-log "ERROR glance_ctl: Service $i failed to $ACTION"
+      ensemble-log "glance_ctl: ERROR - Service $i failed to $ACTION"
     fi
   done
 }
@@ -32,7 +50,7 @@ function set_or_update {
   # This handles configuration of both api and registry server
   # until LP #806241 is resolved.  Until then, $3 is either
   # 'api' or 'registry' to specify which
-  # set or update a key=value config option in nova.conf
+  # set or update a key=value config option in glance.conf
   KEY=$1
   VALUE=$2
   [[ $3 == "api" ]] && CONF=$GLANCE_API_CONF
@@ -47,5 +65,19 @@ function set_or_update {
   else
     echo "set $3 $KEY $VALUE"
     echo "$KEY = $VALUE" >>$CONF
+  fi
+}
+
+function add_glance_ppa {
+  # temporarily find out what nova version we
+  # should be using from a source file.  this
+  # should go away when ensemble can handle config
+  # better.
+  if [[ -e $FORMULA_DIR/nova-version ]] ; then
+    . $FORMULA_DIR/nova-version
+    . /etc/lsb-release
+    [[ -z $PPA ]] && return 0
+    PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
+    add-apt-repository "$PPA_URL" || exit 1
   fi
 }
