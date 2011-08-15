@@ -1,11 +1,12 @@
 #!/bin/bash
 
 SERVICES="glance-api glance-registry"
-GLANCE_REGISTRY_CONF="/etc/glance/glance-registry.conf"
-GLANCE_API_CONF="/etc/glance/glance-api.conf"
+GLANCE_REGISTRY_CONF=$(config-get registry-config)
+GLANCE_API_CONF=$(config-get api-config)
 
-DB_USER="glance"
-NOVA_DB="nova"
+DB_USER=$(config-get db-user)
+NOVA_DB=$(config-get nova-db)
+PPA=$(config-get glance-release)
 
 HOSTNAME=`hostname -f`
 
@@ -68,16 +69,12 @@ function set_or_update {
   fi
 }
 
-function add_glance_ppa {
-  # temporarily find out what nova version we
-  # should be using from a source file.  this
-  # should go away when ensemble can handle config
-  # better.
-  if [[ -e $FORMULA_DIR/nova-version ]] ; then
-    . $FORMULA_DIR/nova-version
-    . /etc/lsb-release
-    [[ -z $PPA ]] && return 0
-    PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
-    add-apt-repository "$PPA_URL" || exit 1
-  fi
+function add_ppa {
+  # Install from archive instead of PPA.
+  [[ $PPA == "distro" ]] && return 0
+  . /etc/lsb-release
+  ensemble-log "glance: Setting up PPA for $PPA"
+  [[ -z $PPA ]] && return 0
+  PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
+  add-apt-repository "$PPA_URL" || exit 1
 }
