@@ -1,0 +1,17 @@
+options:
+  api-config:
+    default: /etc/glance/glance-api.conf
+    type: str
+    description: Full path to Glance API configuration.
+  registry-config:
+    default: /etc/glance/glance-registry.conf
+    type: str
+    description: Full path to Glance registry configuration.
+  db-user:
+    default: glance
+    type: str
+    description: Database username
+  nova-db:
+    default: nova
+    type: str
+    description: Nova database name
