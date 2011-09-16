@@ -1,21 +1,21 @@
 options:
   glance-release:
     default: distro
-    type: str
+    type: string
     description: Glance PPA from which to install. (distro, trunk, milestone, milestone-proposed)
   api-config:
     default: /etc/glance/glance-api.conf
-    type: str
+    type: string
     description: Full path to Glance API configuration.
   registry-config:
     default: /etc/glance/glance-registry.conf
-    type: str
+    type: string
     description: Full path to Glance registry configuration.
   db-user:
     default: glance
-    type: str
+    type: string
     description: Database username
   nova-db:
     default: nova
-    type: str
+    type: string
     description: Nova database name
