@@ -1,4 +1,8 @@
 options:
+  glance-release:
+    default: distro
+    type: str
+    description: Glance PPA from which to install. (distro, trunk, milestone, milestone-proposed)
   api-config:
     default: /etc/glance/glance-api.conf
     type: str
