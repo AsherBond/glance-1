@@ -10,7 +10,7 @@ else
 fi
 
 function install_hook {
-  ensemble-log "Installing nova packages"
+  juju-log "Installing nova packages"
   apt-get -y install python-software-properties || exit 1
 
   add_ppa
@@ -35,7 +35,7 @@ function install_hook {
 }
 
 function db_joined {
-  ensemble-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@`unit-get private-address`"
+  juju-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@`unit-get private-address`"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
   relation-set hostname=`unit-get private-address`
@@ -51,7 +51,7 @@ function db_changed {
   else
     echo "db_changed: Received password from $DB_HOST"
   fi
-  ensemble-log "glance: db_changed: Configuring registry for access to $NOVA_DB@$DB_HOST"
+  juju-log "glance: db_changed: Configuring registry for access to $NOVA_DB@$DB_HOST"
   set_or_update sql_connection "mysql://$DB_USER:$DB_PASSWORD@$DB_HOST/$NOVA_DB" registry
   glance_ctl all restart
 }
@@ -60,7 +60,7 @@ function image-service_joined {
   bind_host=$(cat /etc/glance/glance-api.conf | grep bind_host | cut -d= -f2 | sed -e 's/ //g')
   bind_port=$(cat /etc/glance/glance-api.conf | grep bind_port | cut -d= -f2 | sed -e 's/ //g')
   [[ $bind_host == "0.0.0.0" ]] && bind_host=`unit-get private-address`
-  ensemble-log "glance: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
+  juju-log "glance: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
   relation-set glance-api-server="$bind_host:$bind_port"
 }
 

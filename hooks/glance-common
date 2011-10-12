@@ -29,7 +29,7 @@ function glance_ctl {
   fi
   ACTION=$2
   if [[ -z $CTL ]] || [[ -z $ACTION ]] ; then
-    ensemble-log "ERROR glance_ctl: Not enough arguments"
+    juju-log "ERROR glance_ctl: Not enough arguments"
     exit 1
   fi
   for i in $CTL ; do
@@ -42,7 +42,7 @@ function glance_ctl {
         glance_ctl_status $i && service $i restart || service $i start ;;
     esac
     if [[ $? != 0 ]] ; then
-      ensemble-log "glance_ctl: ERROR - Service $i failed to $ACTION"
+      juju-log "glance_ctl: ERROR - Service $i failed to $ACTION"
     fi
   done
 }
@@ -59,7 +59,7 @@ function set_or_update {
   [[ -z $KEY ]] && exit 1
   [[ -z $VALUE ]] && exit 1
   cat $CONF | grep "$KEY = $VALUE" >/dev/null \
-   && ensemble-log "glance: $KEY = $VALUE already set" exit 0
+   && juju-log "glance: $KEY = $VALUE already set" exit 0
   if cat $CONF | grep "$KEY =" >/dev/null ; then
     echo "updatei $3 $KEY $VALUE"
     sed -i "s|\($KEY = \).*|\1$VALUE|" $CONF
@@ -73,7 +73,7 @@ function add_ppa {
   # Install from archive instead of PPA.
   [[ $PPA == "distro" ]] && return 0
   . /etc/lsb-release
-  ensemble-log "glance: Setting up PPA for $PPA"
+  juju-log "glance: Setting up PPA for $PPA"
   [[ -z $PPA ]] && return 0
   PPA_URL="deb http://ppa.launchpad.net/nova-core/$PPA/ubuntu $DISTRIB_CODENAME main"
   add-apt-repository "$PPA_URL" || exit 1
