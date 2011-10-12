@@ -35,14 +35,14 @@ function install_hook {
 }
 
 function db_joined {
-  ensemble-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@$HOSTNAME"
+  ensemble-log "glance: db_joined: requesting access to $NOVA_DB for $DB_USER@`unit-get private-address`"
   relation-set database=$NOVA_DB
   relation-set username=$DB_USER
-  relation-set hostname=$HOSTNAME
+  relation-set hostname=`unit-get private-address`
 }
 
 function db_changed {
-  DB_HOST=`relation-get db_host`
+  DB_HOST=`relation-get private-address`
   DB_PASSWORD=`relation-get password`
   echo "OUT: $DB_HOST $DB_PASSWORD" >>/tmp/log
   if [[ -z $DB_HOST ]] || [[ -z $DB_PASSWORD ]] ; then
@@ -59,7 +59,7 @@ function db_changed {
 function image-service_joined {
   bind_host=$(cat /etc/glance/glance-api.conf | grep bind_host | cut -d= -f2 | sed -e 's/ //g')
   bind_port=$(cat /etc/glance/glance-api.conf | grep bind_port | cut -d= -f2 | sed -e 's/ //g')
-  [[ $bind_host == "0.0.0.0" ]] && bind_host=$HOSTNAME
+  [[ $bind_host == "0.0.0.0" ]] && bind_host=`unit-get private-address`
   ensemble-log "glance: image-service_joined: To peer glance-api-server=$bind_host:$bind_port"
   relation-set glance-api-server="$bind_host:$bind_port"
 }
