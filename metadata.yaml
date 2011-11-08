@@ -1,6 +1,5 @@
 ensemble: formula
 name: glance
-revision: 29
 summary: "OpenStack Image Registry and Delivery Service"
 description: |
  The Glance project provides an image registration and discovery service
