@@ -61,10 +61,8 @@ function set_or_update {
   cat $CONF | grep "$KEY = $VALUE" >/dev/null \
    && juju-log "glance: $KEY = $VALUE already set" exit 0
   if cat $CONF | grep "$KEY =" >/dev/null ; then
-    echo "updatei $3 $KEY $VALUE"
     sed -i "s|\($KEY = \).*|\1$VALUE|" $CONF
   else
-    echo "set $3 $KEY $VALUE"
     echo "$KEY = $VALUE" >>$CONF
   fi
 }
